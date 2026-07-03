@@ -29,13 +29,16 @@ MediaPipe is a well documented & accurate model, the hand landmarks are very imp
 ## Screenshots:
 
 1. ASL alphabet:
-![ASL Alphabet:](images/ASL_Alphabet.jpg)
+
+![ASL Alphabet](images/ASL_Alphabet.jpg)
 
 2. 1st commit - working:
-![1st commit - working:](images/1st_commit_screenshot.png)
+
+![1st commit - working](images/1st_commit_screenshot.png)
 
 3. 1st commit - not working: 
-![1st commit - not working:](images/1st_commit_incorrect.png)
+
+![1st commit - not working](images/1st_commit_incorrect.png)
 
 ## Known limitations
  - Missing letters J & Z, currently not possible with current framework.
