@@ -4,8 +4,11 @@ import cv2
 import mediapipe as mp
 import time
 import csv
+import numpy as np
 import requests
 import threading     # to make custom callback function
+
+from universal import logger
 
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
@@ -33,14 +36,13 @@ def background_send_data(landmark):
     global data
     hand_landmark = []
     for i in landmark:
-        #print(f"Sending data, x: {i.x}, y: {i.y}, z: {i.z}")
+        logger("sending data",(i), debug= False)
         hand_landmark.append(i.x)
         hand_landmark.append(i.y)
         hand_landmark.append(i.z)
     data = requests.post(url,json=hand_landmark).json()                      # Freezes code
 
 def my_result_callback(result, output_image, timestamp_ms):
-    #print("Calling back")
     global latest_results
     global image
     global lastest_timestamp
@@ -49,24 +51,23 @@ def my_result_callback(result, output_image, timestamp_ms):
     image = output_image
     lastest_timestamp = timestamp_ms
 
-def draw_landmarks(hand, frame):
-
+def draw_landmarks(hand, canvas):
     for first,second in hand_connections:
-        x0 = int(hand[first].x*frame.shape[1])  # Turn normalised (0-1) back into actual size of the frame.
-        y0 = int(hand[first].y*frame.shape[0])  # frame.shape[0] = height, frame.shape[1] = width
-        x1 = int(hand[second].x*frame.shape[1])
-        y1 = int(hand[second].y*frame.shape[0])
-        cv2.line(frame,(x0,y0),(x1,y1),(0,255,0),2)
+        x0 = int(hand[first].x*canvas.shape[1])  # Turn normalised (0-1) back into actual size of the canvas.
+        y0 = int(hand[first].y*canvas.shape[0])  # canvas.shape[0] = height, canvas.shape[1] = width
+        x1 = int(hand[second].x*canvas.shape[1])
+        y1 = int(hand[second].y*canvas.shape[0])
+        cv2.line(canvas,(x0,y0),(x1,y1),(0,255,0),2)
 
     for landmark in hand:
-        x_pixel = int(landmark.x * frame.shape[1])  
-        y_pixel = int(landmark.y *frame.shape[0])
+        x_pixel = int(landmark.x * canvas.shape[1])  
+        y_pixel = int(landmark.y *canvas.shape[0])
                                                 # Z (depth) is relative to the wrist
-        cv2.circle(frame, (x_pixel,y_pixel), 5, (255,255,0),-1)
+        cv2.circle(canvas, (x_pixel,y_pixel), 5, (255,255,0),-1)
 
 # Create a hand landmarker
 options = HandLandmarkerOptions(
-    base_options=BaseOptions(model_asset_path='C:/Users/Mine/Coding_Projects/ASL_vision_NeuralNet/hand_landmarker.task'),
+    base_options=BaseOptions(model_asset_path='hand_landmarker.task'),
     running_mode=VisionRunningMode.LIVE_STREAM,
     result_callback = my_result_callback)
 with HandLandmarker.create_from_options(options) as landmarker:        
@@ -77,6 +78,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
         while True:      
             letter = cv2.waitKey(1) & 0xFF
             ret, frame = cap.read()                 # ret = if frame is there, frame is the frame itself
+            blank_frame = np.zeros(frame.shape,dtype=np.uint8)   #changes to float32
             if ret == True:
                 rgb = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)        # Blu,Gre,Red to RGB converts to RGB as its needed for media pipe
             else:
@@ -93,7 +95,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
             if latest_results and latest_results.hand_landmarks:        # Prevents async timing issues & if no hands are in frame(needs frame to start everything.)
                 #data = latest_results.hand_landmarks[0][0]
                 for hand in latest_results.hand_landmarks:
-                    draw_landmarks(hand,frame)
+                    draw_landmarks(hand,blank_frame)
                     
         
             while True:
@@ -104,14 +106,12 @@ with HandLandmarker.create_from_options(options) as landmarker:
                             t = threading.Thread(target = background_send_data, args=(latest_results.hand_landmarks[0],)) #commma is make it args a tuple
                             t.start()
                     if data != None:
-                        #print(f"data: {data['response']}") 
-                        cv2.putText(frame, data['response'],(10,30), cv2.FONT_HERSHEY_SIMPLEX,1.0,(255,0,255), thickness=5)
-                        #data = None
-                        #print(f"data resetting") 
+                        logger("data",data['response'], debug=False)
+                        cv2.putText(blank_frame, data['response'],(10,30), cv2.FONT_HERSHEY_SIMPLEX,1.0,(255,0,255), thickness=5)
                 break
             if letter == ord('q'):
                 break
-            cv2.imshow("Hand Tracking", frame)
+            cv2.imshow("Hand Tracking", blank_frame)
 
     cap.release()                   # releases webcame
     cv2.destroyAllWindows()         # closes windows
