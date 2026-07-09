@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 - Next issue was amount of data, originally I had around 100 sets of landmarks, for a model with 26 outputs this is just not enough data to learn. So i used prepare_dataset.py to increase the total to 5000 sets. I also repeated with slightly different gestures of the same letter, not just different frames to ensure more variety in the training data. As the landmarks would change with different people, due to signing styles and proportions of fingers, so I need prepare some data of other people signing. *(3. 1st commit - not working)*
 09/07:
-- To optimise for the Raspberry Pi's limited CPU, I replaced the live webcam feed with a black canvas — the hand skeleton drawn from landmarks communicates the hand position just as effectively. I also reduced the camera resolution to suit the smaller screen and cut down on data per frame. A custom universal logger was added to simplify debugging across scripts. There is still significant lag, I need to reduce the load of MediaPipe to improve the lagging.
+- To optimise for the Raspberry Pi's limited CPU, I replaced the live webcam feed with a black canvas — the hand skeleton drawn from landmarks communicates the hand position just as effectively. I also reduced the camera resolution to suit the smaller screen and cut down on data per frame. A custom universal logger was added to simplify debugging across scripts. There is still significant lag, I need to reduce the load of MediaPipe to improve the lag
 
 ## Screenshots:
 
