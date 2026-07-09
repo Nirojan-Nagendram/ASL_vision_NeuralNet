@@ -39,10 +39,8 @@ pip install -r requirements.txt
 
 - Next issue was amount of data, originally I had around 100 sets of landmarks, for a model with 26 outputs this is just not enough data to learn. So i used prepare_dataset.py to increase the total to 5000 sets. I also repeated with slightly different gestures of the same letter, not just different frames to ensure more variety in the training data. As the landmarks would change with different people, due to signing styles and proportions of fingers, so I need prepare some data of other people signing. *(3. 1st commit - not working)*
 09/07:
-- To optimise for the Raspberry Pi's limited CPU, I replaced the live webcam feed with a black canvas — the hand skeleton drawn from landmarks communicates the hand position just as effectively. I also reduced the camera resolution to suit the smaller screen and cut down on data per frame. A custom universal logger was added to simplify debugging across scripts. There is still significant lag, I need to reduce the load of MediaPipe to improve the lag
-
-06/07:
-- Third commit, I am preparing to run the project on a Raspberry pi. I did this by removing the webcam display, replacing it with a simple black screen. This is to reduce the load on the CPU. I reordered the requirements to make sure that mediapipe was downloaded last, and the correct version of torch for a Pi was also added. Finally I added a universal script with a logging function, to improve fututre debugging.
+- I am preparing to run the project on a Raspberry pi. In addition, I reordered the requirements to make sure that mediapipe was downloaded last, and the correct version of torch for a Pi was also added.
+- To optimise for the Raspberry Pi's limited CPU, I replaced the live webcam feed with a black canvas — the hand skeleton drawn from landmarks communicates the hand position just as effectively. I also reduced the camera resolution to suit the smaller screen and cut down on data per frame. A custom universal logger was added to simplify debugging across scripts. There is still significant lag, I need to reduce the load of MediaPipe to improve the lag. Currently it is unusable. **(4. 2nd / 3rd commit - Pi 5 integration - lagging)*
 
 ## Screenshots:
 
