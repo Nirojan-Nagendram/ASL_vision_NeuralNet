@@ -63,7 +63,7 @@ def draw_landmarks(hand, frame):
 
 # Create a hand landmarker
 options = HandLandmarkerOptions(
-    base_options=BaseOptions(model_asset_path='C:/Users/Mine/Coding_Projects/ASL_vision_NeuralNet/hand_landmarker.task'),
+    base_options=BaseOptions(model_asset_path='hand_landmarker.task'),
     running_mode=VisionRunningMode.LIVE_STREAM,
     result_callback = my_result_callback)
 with HandLandmarker.create_from_options(options) as landmarker:         
