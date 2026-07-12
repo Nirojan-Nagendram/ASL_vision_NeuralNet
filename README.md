@@ -43,6 +43,9 @@ pip install -r requirements.txt
 - I am preparing to run the project on a Raspberry pi. In addition, I reordered the requirements to make sure that mediapipe was downloaded last, and the correct version of torch for a Pi was also added.
 - To optimise for the Raspberry Pi's limited CPU, I replaced the live webcam feed with a black canvas — the hand skeleton drawn from landmarks communicates the hand position just as effectively. I also reduced the camera resolution to suit the smaller screen and cut down on data per frame. A custom universal logger was added to simplify debugging across scripts. There is still significant lag, I need to reduce the load of MediaPipe to improve the lag. Currently it is unusable. *(4. 2nd / 3rd commit - Pi 5 integration - lagging)*
 
+11/07:
+- My next goal is to reduce CPU load on the Pi without relying on additional hardware. MediaPipe is the primary bottleneck, so I reduced how frequently frames are sent to it by processing every other frame — this introduces minimal visual lag while halving the workload. I also added a check to prevent multiple prediction threads running simultaneously, avoiding unnecessary CPU load. Finally I reduced minimum tracking confidence within MediaPipe, this will make it less accurate but cost less overhead.
+
 ## Screenshots:
 
 1. ASL alphabet:

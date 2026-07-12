@@ -18,7 +18,7 @@ VisionRunningMode = mp.tasks.vision.RunningMode
 
 latest_results = None
 image = None
-lastest_timestamp = 0
+latest_timestamp = 0
 url = "http://localhost:5000/"
 
 hand_connections = [                    # Basically tupled indicies of connections between joints.
@@ -45,11 +45,11 @@ def background_send_data(landmark):
 def my_result_callback(result, output_image, timestamp_ms):
     global latest_results
     global image
-    global lastest_timestamp
+    global latest_timestamp
 
     latest_results = result
     image = output_image
-    lastest_timestamp = timestamp_ms
+    latest_timestamp = timestamp_ms
 
 def draw_landmarks(hand, canvas):
     for first,second in hand_connections:
@@ -69,45 +69,47 @@ def draw_landmarks(hand, canvas):
 options = HandLandmarkerOptions(
     base_options=BaseOptions(model_asset_path='hand_landmarker.task'),
     running_mode=VisionRunningMode.LIVE_STREAM,
+    min_tracking_confidence=0.3,
     result_callback = my_result_callback)
 with HandLandmarker.create_from_options(options) as landmarker:        
     cap = cv2.VideoCapture(0)                   # opens webcam
     with open('training_landmarks.csv', 'a') as csv_file:
         writer = csv.writer(csv_file)
         frame_count = 0
+        frame_interval = 2   # should the frame where you send 
         cv2.namedWindow("Hand Tracking", cv2.WINDOW_NORMAL)
-        cv2.setWindowProperty("Hand Tracking", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        #cv2.setWindowProperty("Hand Tracking", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # limits resolution
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) 
         
         while True:      
             letter = cv2.waitKey(1) & 0xFF
             ret, frame = cap.read()                 # ret = if frame is there, frame is the frame itself
             blank_frame = np.zeros(frame.shape,dtype=np.uint8)   #changes to float32
             if ret == True:
-                rgb = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)        # Blu,Gre,Red to RGB converts to RGB as its needed for media pipe
+                rgb = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)        # Blu,Gre,Red converts to RGB as its needed for media pipe
             else:
                 print("No, frames available")
                 break
-            last_timestamp = lastest_timestamp
-            lastest_timestamp = int(time.time()*1000)
-            if lastest_timestamp > last_timestamp+10:      # checks if time is always moving forward
-                # print("time is moving forward")
-                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data = rgb)
-                landmarker.detect_async(mp_image,lastest_timestamp)   # mp.image as MP doesn't accept numpy, calculates finger vectors
-                frame_count += 1                                      # async waits for resposnse from callback, without pausing  
+            last_timestamp = latest_timestamp
+            latest_timestamp = int(time.time()*1000)
+            if latest_timestamp > last_timestamp+10:
+                logger("time is moving", "forward", debug= False)
+                frame_count += 1 
+                if frame_count % frame_interval == 0:
+                    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data = rgb)
+                    landmarker.detect_async(mp_image,latest_timestamp)   # mp.image as MP doesn't accept numpy, calculates finger vectors
+                                                                        # async waits for resposnse from callback, without pausing  
             
             if latest_results and latest_results.hand_landmarks:        # Prevents async timing issues & if no hands are in frame(needs frame to start everything.)
-                #data = latest_results.hand_landmarks[0][0]
                 for hand in latest_results.hand_landmarks:
                     draw_landmarks(hand,blank_frame)
-                    
-        
+            t = None
             while True:
                 if latest_results and latest_results.hand_landmarks:
                     for hand_frame in latest_results.hand_landmarks:
                         #after press, hold to capture that letter.
-                        if frame_count % 5 == 0:
+                        if t == None or t.is_alive() == False:
                             t = threading.Thread(target = background_send_data, args=(latest_results.hand_landmarks[0],)) #commma is make it args a tuple
                             t.start()
                     if data != None:
