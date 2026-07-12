@@ -69,7 +69,7 @@ def draw_landmarks(hand, canvas):
 options = HandLandmarkerOptions(
     base_options=BaseOptions(model_asset_path='hand_landmarker.task'),
     running_mode=VisionRunningMode.LIVE_STREAM,
-    min_tracking_confidence=0.3,
+    #min_tracking_confidence=0.3,
     result_callback = my_result_callback)
 with HandLandmarker.create_from_options(options) as landmarker:        
     cap = cv2.VideoCapture(0)                   # opens webcam
@@ -78,7 +78,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
         frame_count = 0
         frame_interval = 2   # should the frame where you send 
         cv2.namedWindow("Hand Tracking", cv2.WINDOW_NORMAL)
-        #cv2.setWindowProperty("Hand Tracking", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.setWindowProperty("Hand Tracking", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # limits resolution
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) 
         
@@ -118,6 +118,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
                 break
             if letter == ord('q'):
                 break
+            blank_frame = cv2.flip(blank_frame, -1)
             cv2.imshow("Hand Tracking", blank_frame)
 
     cap.release()                   # releases webcame

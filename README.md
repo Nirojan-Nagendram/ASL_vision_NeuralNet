@@ -45,6 +45,10 @@ pip install -r requirements.txt
 
 11/07:
 - My next goal is to reduce CPU load on the Pi without relying on additional hardware. MediaPipe is the primary bottleneck, so I reduced how frequently frames are sent to it by processing every other frame — this introduces minimal visual lag while halving the workload. I also added a check to prevent multiple prediction threads running simultaneously, avoiding unnecessary CPU load. Finally I reduced minimum tracking confidence within MediaPipe, this will make it less accurate but cost less overhead.
+12/07:
+ - After testing, the CPU temperature reduced from 74°C to 62°C. This is much more managable with just heatsinks, rather than a fan. Additionally, the video has stopped lagging beyond the expected amount due to accessing MP every other frame. It is much more usable. I added a flip to the frame, as the Pi sits better on that side. Reducing the minimum tracking confidence has seem to increase accuracy specifically when the fingers are close together, it does not seem to lag much without it. So I am leaving it at the regular minimum confidence for now. 
+ - I am working on casing for the camera, however the neural network's accuracy is the biggest issue. It is more accurate with letters where the fingers do not overlap such as b or u-w. However it struggles with letters such M and N. There are a good number of very similar letters, which have one finger (usually the thumb) in a different place. Additionally, the angle of the camera matters a lot, for example the letters U & V get confused as from the side they look very similar in 2D plane.*(5. U to V turning)*
+
 
 ## Screenshots:
 
@@ -63,6 +67,10 @@ pip install -r requirements.txt
 4. 2nd / 3rd commit - Pi 5 integration - lagging:
 
 ![Pi 5 integration - lagging](images/pi_integration_lagging.gif)
+
+5. U to V turning
+
+![U to V turning](images/U_to_V_turning.gif)
 
 ## Known limitations
  - Missing letters J & Z, currently not possible with current framework.
